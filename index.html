@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 
 <html lang="en">
@@ -15,14 +16,14 @@
 
 <style>
 :root{
-  --purple:#5F33FF;
-  --lav:#F4C2FF;
-  --red:#F64740;
-  --olive:#827F35;
+  --purple:#072F5F;
+  --lav:#F5CCE8;
+  --red:#984447;
+  --olive:#475B5A;
   --ink:#272727;
-  --cream:#F7EFD8;
-  --bg:#F64740;
-  --card:#F4C2FF;
+  --cream:#B1E7D2;
+  --bg:#984447;
+  --card:#F5CCE8;
   --mute:rgba(39,39,39,.58);
   --line:rgba(39,39,39,.16);
   --line2:rgba(39,39,39,.28);
@@ -33,8 +34,8 @@
 
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#F64740;
-    --card:#F4C2FF;
+    --bg:#984447;
+    --card:#F5CCE8;
     --ink:#272727;
     --mute:rgba(39,39,39,.58);
     --line:rgba(39,39,39,.16);
@@ -43,8 +44,8 @@
 }
 
 :root[data-theme="dark"]{
-  --bg:#F64740;
-  --card:#F4C2FF;
+  --bg:#984447;
+  --card:#F5CCE8;
   --ink:#272727;
   --mute:rgba(39,39,39,.58);
   --line:rgba(39,39,39,.16);
@@ -297,18 +298,12 @@ h2 em{
   border-color:var(--olive);
 }
 
-.c.s2{
-  background:var(--red);
-  border-color:var(--red);
-}
-
 .c.future{
   opacity:.4;
   pointer-events:none;
 }
 
-.c.today.s1,
-.c.today.s2{
+.c.today.s1{
   border-color:var(--purple);
 }
 
@@ -497,20 +492,6 @@ nav button.on{
   border-top:1px solid var(--line);
 }
 
-.chk{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  font-size:14px;
-  margin-top:12px;
-}
-
-.chk input{
-  width:22px;
-  height:22px;
-  accent-color:var(--purple);
-}
-
 #err{
   position:fixed;
   top:0;
@@ -554,10 +535,8 @@ nav button.on{
 
   .c,
   .c.s1,
-  .c.s2,
   .c.today,
-  .c.today.s1,
-  .c.today.s2{
+  .c.today.s1{
     width:30px!important;
     min-width:30px!important;
     max-width:30px!important;
@@ -568,12 +547,7 @@ nav button.on{
   }
 }
 
-/* =========================================================
-   SAVINGS LINE
-   This is deliberately OUTSIDE .htop in the HTML below.
-   It therefore sits at the bottom of the header instead of
-   competing for space with the "goals!" title.
-   ========================================================= */
+/* SAVINGS LINE */
 
 .savings-line{
   width:100%;
@@ -611,6 +585,7 @@ nav button.on{
 }
 
 /* Reset button */
+
 .reset-wrap{
   padding:18px 4px 10px;
   text-align:center;
@@ -650,18 +625,16 @@ window.onerror=function(m){
 };
 
 var DAILY=[
-  ["bed","make bed",30,20],
-  ["ex","exercise",70,50],
-  ["clock","clock in for school",70,50],
-  ["tidy","tidy room",30,30],
-  ["hobby","30 min hobby",30,15]
+  ["ex","exercise",150],
+  ["brain","brain improvement",100],
+  ["hobby","hobby improvement",50]
 ];
 
 var WEEKLY=[
-  ["chart","chore chart",100,80],
-  ["laundry","laundry",80,50],
-  ["plans","make/keep plans",100,50],
-  ["job","job hunting",110,60]
+  ["bathroom","clean the bathroom",200],
+  ["climb1","climb once",100],
+  ["climb2","climb twice",100],
+  ["album","listen to a new album",100]
 ];
 
 var DN=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
@@ -697,8 +670,7 @@ function monday(d){
 }
 
 function money(n){
-  var s=n<0?"-$":"$";
-  return s+Math.abs(n).toFixed(2);
+  return "$"+Math.abs(n).toFixed(2);
 }
 
 function load(){
@@ -729,13 +701,12 @@ function save(){
 /*
  * RESET CURRENT WEEK ONLY
  *
- * This intentionally does NOT touch:
+ * This does NOT touch:
  *   - S.hist
  *   - S.carry
  *   - S.week
  *
- * It only clears the current week's daily and weekly
- * checkbox states.
+ * It only clears the current week's task states.
  */
 function resetApp(){
 
@@ -779,10 +750,6 @@ function closable(){
   return new Date()>=s;
 }
 
-function wState(id){
-  return S.w[id]||null;
-}
-
 function tapDaily(id,i){
 
   if(i>todayIdx()) return;
@@ -791,7 +758,12 @@ function tapDaily(id,i){
     S.d[id]=[0,0,0,0,0,0,0]
   );
 
-  r[i]=(r[i]+1)%3;
+  /*
+   * Only two states now:
+   * 0 = blank
+   * 1 = complete
+   */
+  r[i]=r[i]===1?0:1;
 
   save();
   render();
@@ -803,16 +775,14 @@ function tapWeekly(id,i){
 
   var cur=S.w[id];
 
+  /*
+   * Only two states now:
+   * blank = not completed
+   * state 1 = completed
+   */
   if(cur && cur.day===i){
 
-    if(cur.state===1){
-      S.w[id]={
-        day:i,
-        state:2
-      };
-    }else{
-      S.w[id]=null;
-    }
+    S.w[id]=null;
 
   }else{
 
@@ -834,15 +804,12 @@ function livePoints(){
 
     var id=t[0],
         a=t[2],
-        b=t[3],
         r=S.d[id]||[];
 
     for(var i=0;i<7;i++){
 
       if(r[i]===1){
         p+=a;
-      }else if(r[i]===2){
-        p-=b;
       }
     }
   });
@@ -851,16 +818,10 @@ function livePoints(){
 
     var id=t[0],
         a=t[2],
-        b=t[3],
         w=S.w[id];
 
-    if(w){
-
-      if(w.state===1){
-        p+=a;
-      }else{
-        p-=b;
-      }
+    if(w&&w.state===1){
+      p+=a;
     }
   });
 
@@ -869,25 +830,18 @@ function livePoints(){
 
 function finalPoints(){
 
-  var p=0,
-      miss=0;
+  var p=0;
 
   DAILY.forEach(function(t){
 
     var id=t[0],
         a=t[2],
-        b=t[3],
         r=S.d[id]||[];
 
     for(var i=0;i<7;i++){
 
       if(r[i]===1){
         p+=a;
-      }else if(r[i]===2){
-        p-=b;
-      }else{
-        p-=b;
-        miss++;
       }
     }
   });
@@ -896,27 +850,16 @@ function finalPoints(){
 
     var id=t[0],
         a=t[2],
-        b=t[3],
         w=S.w[id];
 
-    if(w){
-
-      if(w.state===1){
-        p+=a;
-      }else{
-        p-=b;
-      }
-
-    }else{
-
-      p-=b;
-      miss++;
+    if(w&&w.state===1){
+      p+=a;
     }
   });
 
   return{
     p:p,
-    miss:miss
+    miss:0
   };
 }
 
@@ -964,16 +907,6 @@ function weekView(){
       pool=S.carry+live,
       h='';
 
-  /*
-   * HEADER
-   *
-   * .htop contains ONLY the date, points, and goals title.
-   *
-   * The savings line is deliberately placed AFTER .htop,
-   * making it a separate full-width row at the bottom of
-   * the header.
-   */
-
   h+='<header>';
 
   h+='<div class="htop">';
@@ -986,9 +919,7 @@ function weekView(){
      fmt(sun)+
      '</div>';
 
-  h+='<div class="big'+
-     (pool<0?" neg":"")+
-     '">'+
+  h+='<div class="big">'+
      pool+
      '<span class="unit">pts</span>'+
      '</div>';
@@ -999,18 +930,11 @@ function weekView(){
 
   h+='</div>';
 
-  /*
-   * SAVINGS LINE
-   *
-   * Always two lines tall.
-   * It is outside .htop, so "goals!" cannot overlap it.
-   */
-
   h+='<div class="savings-line">';
 
   h+='<span class="savings-text">'+
      money(pool/100)+
-     ' to transfer to savings'+
+     ' to add to fun money fund'+
      '</span>';
 
   if(S.carry){
@@ -1045,7 +969,6 @@ function weekView(){
     var id=task[0],
         nm=task[1],
         a=task[2],
-        b=task[3],
         r=S.d[id]||[];
 
     h+='<div class="row">';
@@ -1054,8 +977,6 @@ function weekView(){
        nm+
        '<small>+'+
        a+
-       ' / −'+
-       b+
        '</small>'+
        '</div>';
 
@@ -1072,7 +993,7 @@ function weekView(){
          '\','+
          i+
          ')">'+
-         (v===1?"✓":v===2?"✕":"")+
+         (v===1?"✓":"")+
          '</button>';
     }
 
@@ -1097,7 +1018,6 @@ function weekView(){
     var id=task[0],
         nm=task[1],
         a=task[2],
-        b=task[3],
         w=S.w[id];
 
     h+='<div class="row">';
@@ -1106,8 +1026,6 @@ function weekView(){
        nm+
        '<small>+'+
        a+
-       ' / −'+
-       b+
        '</small>'+
        '</div>';
 
@@ -1124,7 +1042,7 @@ function weekView(){
          '\','+
          i+
          ')">'+
-         (v===1?"✓":v===2?"✕":"")+
+         (v===1?"✓":"")+
          '</button>';
     }
 
@@ -1145,8 +1063,6 @@ function weekView(){
        'Week close-out unlocks Sunday at 6 pm.'+
        '</p>';
   }
-
-  /* CURRENT-WEEK RESET BUTTON */
 
   h+='<div class="reset-wrap">';
 
@@ -1177,7 +1093,7 @@ function logView(){
 
   h+='<div class="hleft">';
 
-  h+='<div class="eyebrow">Saved to date</div>';
+  h+='<div class="eyebrow">Added to fun money fund</div>';
 
   h+='<div class="big">'+
      money(totalSaved/100)+
@@ -1346,9 +1262,7 @@ function logView(){
          fmt(e)+
          '</div>';
 
-      h+='<span'+
-         (x.transfer<=0?' class="neg"':'')+
-         '>'+
+      h+='<span>'+
          x.p+
          ' pts · '+
          money(x.transfer/100)+
@@ -1360,10 +1274,6 @@ function logView(){
     h+='</section>';
   }
 
-  /*
-   * The reset button is available on Log too, but it ONLY
-   * resets the current week's checkboxes.
-   */
   h+='<div class="reset-wrap">';
 
   h+='<button class="reset-btn" onclick="resetApp()">'+
@@ -1395,7 +1305,7 @@ function openClose(){
 
   var f=finalPoints(),
       pool=S.carry+f.p,
-      transfer=Math.max(0,pool),
+      transfer=pool,
       m=document.getElementById("m"),
       h='';
 
@@ -1403,22 +1313,10 @@ function openClose(){
 
   h+='<h3>Close out the week</h3>';
 
-  h+='<div class="big'+
-     (pool<0?" neg":"")+
-     '" style="font-size:38px">'+
+  h+='<div class="big" style="font-size:38px">'+
      pool+
      '<span class="unit">pts</span>'+
      '</div>';
-
-  if(f.miss){
-
-    h+='<p>'+
-       f.miss+
-       ' unmarked item'+
-       (f.miss>1?"s":"")+
-       ' counted as missed.'+
-       '</p>';
-  }
 
   if(S.carry){
 
@@ -1435,26 +1333,27 @@ function openClose(){
 
   if(pool>0){
 
-    h+='<p>Move <b>'+
+    h+='<p>Add <b>'+
        money(transfer/100)+
-       '</b> to your savings account.</p>';
+       '</b> to your fun money fund.</p>';
 
     h+='<label class="chk">'+
        '<input type="checkbox" onchange="document.getElementById(\'go\').disabled=!this.checked">'+
-       ' I’ve transferred '+
+       ' I’ve added '+
        money(transfer/100)+
+       ' to my fun money fund'+
        '</label>';
 
   }else{
 
     h+='<p>'+
-       'Nothing to transfer — this deficit carries into next week’s total.'+
+       'No points earned this week. The total carries into next week.'+
        '</p>';
   }
 
   h+='<button id="go" class="pri" '+
      (pool>0?"disabled":"")+
-     ' onclick="doClose('+f.p+','+f.miss+')">'+
+     ' onclick="doClose('+f.p+')">'+
      'Start next week'+
      '</button>';
 
@@ -1476,10 +1375,6 @@ function doClose(weekPoints){
       transfer=Math.max(0,pool),
       carryAfter=Math.min(0,pool);
 
-  /*
-   * Save a snapshot of the completed week in history.
-   * Resetting the CURRENT week later will not modify this.
-   */
   S.hist.push({
     week:S.week,
     d:S.d,
@@ -1514,3 +1409,4 @@ render();
 
 </body>
 </html>
+```
